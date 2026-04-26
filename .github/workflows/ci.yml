@@ -26,6 +26,15 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      # apps/ml hooks `ruff` / `mypy` via pnpm -r; install CLI tools on PATH for the Node job.
+      - name: Setup Python (ML lint + typecheck)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Ruff and Mypy
+        run: pip install ruff mypy
+
       - name: Install
         run: pnpm install --frozen-lockfile
 
@@ -39,7 +48,7 @@ jobs:
         run: pnpm build
 
   python:
-    name: Python — lint + typecheck
+    name: Python — ruff (lint + format)
     runs-on: ubuntu-latest
     defaults:
       run:

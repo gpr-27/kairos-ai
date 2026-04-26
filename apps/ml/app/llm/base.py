@@ -30,11 +30,12 @@ class LLMProvider(Protocol):
     """
 
     name: str
-    last_used_model: str
 
-    async def stream(
-        self, request: LLMRequest
-    ) -> AsyncIterator[str]:  # pragma: no cover - protocol
+    @property
+    def last_used_model(self) -> str:  # pragma: no cover - protocol
+        ...
+
+    def stream(self, request: LLMRequest) -> AsyncIterator[str]:  # pragma: no cover - protocol
         ...
 
     async def complete(self, request: LLMRequest) -> str:  # pragma: no cover - protocol
