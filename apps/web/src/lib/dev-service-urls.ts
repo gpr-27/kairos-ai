@@ -23,7 +23,7 @@ export function getApiBaseUrl(): string {
 }
 
 export function getMlBaseUrl(): string {
-  if (useViteServiceProxy()) {
+  if (shouldProxyViaVite()) {
     return `${window.location.origin}${ML_PROXY_PREFIX}`;
   }
   return env.VITE_ML_BASE_URL;
