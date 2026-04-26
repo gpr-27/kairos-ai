@@ -3,14 +3,23 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from typing import cast
 
 import groq as groq_sdk
 from groq import AsyncGroq
+from groq.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ..config import get_settings
 from ..logger import logger
 from .base import LLMRequest
+
+
+def _groq_messages(request: LLMRequest) -> list[ChatCompletionMessageParam]:
+    return cast(
+        list[ChatCompletionMessageParam],
+        [m.model_dump(exclude_none=True) for m in request.messages],
+    )
 
 
 def _fallback_model() -> str:
@@ -40,30 +49,30 @@ class GroqProvider:
 
     async def _do_stream(self, model: str, request: LLMRequest) -> AsyncIterator[str]:
         """Yield token deltas from a single Groq streaming call."""
-        response = await self._client.chat.completions.create(
+        stream = await self._client.chat.completions.create(
             model=model,
-            messages=[m.model_dump(exclude_none=True) for m in request.messages],
+            messages=_groq_messages(request),
             temperature=request.temperature,
             max_tokens=request.max_tokens,
             stop=request.stop,
             stream=True,
         )
-        async for chunk in response:
+        async for chunk in stream:
             delta = chunk.choices[0].delta.content if chunk.choices else None
             if delta:
                 yield delta
 
     async def _do_complete(self, model: str, request: LLMRequest) -> str:
         """Return a full completion from a single Groq non-streaming call."""
-        response = await self._client.chat.completions.create(
+        completion = await self._client.chat.completions.create(
             model=model,
-            messages=[m.model_dump(exclude_none=True) for m in request.messages],
+            messages=_groq_messages(request),
             temperature=request.temperature,
             max_tokens=request.max_tokens,
             stop=request.stop,
             stream=False,
         )
-        return response.choices[0].message.content or ""
+        return completion.choices[0].message.content or ""
 
     # ── Model fallback list ───────────────────────────────────────────────────
 
