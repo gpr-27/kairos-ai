@@ -1,0 +1,41 @@
+# Force LF line endings for all text files (cross-platform safety)
+* text=auto eol=lf
+
+# Binaries — never touch
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.pt binary
+*.bin binary
+*.safetensors binary
+*.ckpt binary
+*.gguf binary
+
+# Diff-friendly source
+*.ts text diff=typescript
+*.tsx text diff=typescript
+*.js text diff=javascript
+*.jsx text diff=javascript
+*.py text diff=python
+*.md text diff=markdown
+*.json text
+*.yaml text
+*.yml text
+*.html text diff=html
+*.css text diff=css
+
+# GitHub language stats: don't count generated stuff
+pnpm-lock.yaml linguist-generated=true
+*.min.js linguist-generated=true
+*.min.css linguist-generated=true
+
+# GitHub language stats: vendored content not authored by us
+apps/web/public/* linguist-vendored=true
