@@ -1,0 +1,46 @@
+{
+  "name": "kairos-ai",
+  "private": true,
+  "version": "0.1.0",
+  "description": "An AI-powered tutor for DSA, competitive programming, and system design.",
+  "license": "MIT",
+  "author": {
+    "name": "Praneeth Reddy Gandra",
+    "url": "https://github.com/gpr-27"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.33.2",
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" run dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "pnpm --filter api dev",
+    "dev:ml": "pnpm --filter ml dev",
+    "build": "pnpm -r --filter \"./apps/*\" --filter \"./packages/*\" run build",
+    "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm -r run lint:fix",
+    "typecheck": "pnpm -r run typecheck",
+    "format": "prettier --config config/root/.prettierrc.json --ignore-path config/root/.prettierignore --write .",
+    "format:check": "prettier --config config/root/.prettierrc.json --ignore-path config/root/.prettierignore --check .",
+    "prepare": "husky || true"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.11",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.9",
+    "typescript": "^5.7.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs}": [
+      "prettier --config config/root/.prettierrc.json --ignore-path config/root/.prettierignore --write"
+    ],
+    "*.{json,md,yml,yaml,css}": [
+      "prettier --config config/root/.prettierrc.json --ignore-path config/root/.prettierignore --write"
+    ]
+  }
+}
