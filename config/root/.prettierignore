@@ -1,0 +1,30 @@
+node_modules
+dist
+build
+out
+.next
+.turbo
+.cache
+.vercel
+coverage
+pnpm-lock.yaml
+*.min.js
+*.min.css
+
+# Python
+__pycache__
+.venv
+venv
+*.egg-info
+
+# ML artifacts
+training/data/raw
+training/data/processed
+training/checkpoints
+training/runs
+training/wandb
+
+# Generated
+.eslintcache
+.tsbuildinfo
+*.tsbuildinfo
