@@ -1,0 +1,15 @@
+{
+  "name": "ml",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "if [ -x .venv/bin/uvicorn ]; then .venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000; else uvicorn app.main:app --reload --host 0.0.0.0 --port 8000; fi",
+    "start": "if [ -x .venv/bin/uvicorn ]; then .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000; else uvicorn app.main:app --host 0.0.0.0 --port 8000; fi",
+    "lint": "if [ -x .venv/bin/ruff ]; then .venv/bin/ruff check app; else ruff check app; fi",
+    "lint:fix": "if [ -x .venv/bin/ruff ]; then .venv/bin/ruff check --fix app; else ruff check --fix app; fi",
+    "typecheck": "if [ -x .venv/bin/mypy ]; then .venv/bin/mypy app; else mypy app; fi",
+    "format": "if [ -x .venv/bin/ruff ]; then .venv/bin/ruff format app; else ruff format app; fi",
+    "format:check": "if [ -x .venv/bin/ruff ]; then .venv/bin/ruff format --check app; else ruff format --check app; fi",
+    "test": "if [ -x .venv/bin/pytest ]; then .venv/bin/pytest; else pytest; fi"
+  }
+}

@@ -41,17 +41,13 @@
 ⏳ **Intent classifier** (small LLM call) so the user doesn't have to pick the mode manually
 ⏳ **Latency budget**: TTFT < 500ms on Groq, surfaced in UI
 
-## Week 3 — Fine-tuning + own model
+## Week 3 — Coaching data collection
 
 ⏳ **Data collection** (~3–5k samples):
 
 - LeetCode discuss style "hint" pairs
 - Cleaned LangChain / community Q&A on system design
 - Manually curated CP editorials (CF + AtCoder)
-  ⏳ **Fine-tune Qwen 2.5 1.5B** with QLoRA on Kaggle (free T4)
-  ⏳ **Push adapter to HF Hub**, merge into base for inference
-  ⏳ **Deploy to HF Space (ZeroGPU)** — implement `HFSpaceProvider`
-  ⏳ **A/B route**: 50% Groq / 50% own model behind a feature flag, log win rate
 
 ## Week 4 — System design track
 

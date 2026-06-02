@@ -11,14 +11,14 @@
                               │ HTTPS
                               ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│  apps/web   ─  React 18 + Vite + TS + Tailwind v4 + shadcn        │
+│  frontend   ─  React 18 + Vite + TS + Tailwind v4 + shadcn        │
 │                Hosted on Vercel · CDN-served · code-split routes │
 └──────────────────────────────────────────────────────────────────┘
               │                                    │
               │ Bearer JWT (Clerk)                 │ SSE stream
               ▼                                    ▼
 ┌────────────────────────────┐     ┌──────────────────────────────┐
-│  apps/api  (Express + TS)  │     │  apps/ml  (FastAPI + Python) │
+│  backend/api  (Express + TS)  │     │  backend/ml  (FastAPI + Python) │
 │  Mongoose · Zod · Helmet   │     │  LangGraph · Loguru · Pydantic│
 │  Hosted on Render          │     │  Hosted on HuggingFace Spaces │
 └────────────────────────────┘     └──────────────────────────────┘
@@ -26,9 +26,9 @@
               │ MongoDB driver                     │ Provider abstraction
               ▼                                    ▼
 ┌────────────────────────────┐     ┌──────────────────────────────┐
-│  MongoDB Atlas (M0)        │     │  Day 1: Groq Llama-3.3-70B   │
-│  problems · users ·        │     │  Week 3+: Fine-tuned Qwen 2.5 │
-│  submissions · sessions    │     │  hosted on HF ZeroGPU Space   │
+│  MongoDB Atlas (M0)        │     │  Groq Llama-3.3-70B          │
+│  problems · users ·        │     │  (+ Llama-3.1-8B fallback)    │
+│  submissions · sessions    │     │                               │
 └────────────────────────────┘     └──────────────────────────────┘
 
 External:
@@ -42,9 +42,9 @@ Each service has a fundamentally different job:
 
 | Service    | Job                                    | Runtime | Why a separate service?                                                   |
 | ---------- | -------------------------------------- | ------- | ------------------------------------------------------------------------- |
-| `apps/web` | Render UI, talk to two APIs            | Browser | Static-deployable, CDN-cacheable, decoupled from server runtime           |
-| `apps/api` | App data + auth + code execution proxy | Node.js | TypeScript-first, MongoDB-friendly, Clerk SDK-friendly                    |
-| `apps/ml`  | LLM inference + agentic reasoning      | Python  | The Python ML ecosystem (transformers, LangGraph, vLLM) is non-negotiable |
+| `frontend` | Render UI, talk to two APIs            | Browser | Static-deployable, CDN-cacheable, decoupled from server runtime           |
+| `backend/api` | App data + auth + code execution proxy | Node.js | TypeScript-first, MongoDB-friendly, Clerk SDK-friendly                    |
+| `backend/ml`  | LLM inference + agentic reasoning      | Python  | The Python ML ecosystem (transformers, LangGraph, vLLM) is non-negotiable |
 
 The split lets us deploy `ml` to HuggingFace Spaces (free GPU) while `api` lives on Render (free Node hosting), and swap the LLM backend without touching the rest.
 
@@ -77,7 +77,7 @@ For **code execution**, the path is different — code runs through the Express 
 
 ## Layer-by-layer breakdown
 
-### `apps/web` — Frontend
+### `frontend` — Frontend
 
 ```
 src/
@@ -124,7 +124,7 @@ src/
 - **Strict env validation** at module load — fail fast with a clear error if misconfigured.
 - **Route-level code splitting** via `lazy()` — initial bundle stays small, each route is its own chunk.
 
-### `apps/api` — Backend
+### `backend/api` — Backend
 
 Layered architecture with strict boundaries:
 
@@ -166,14 +166,14 @@ src/
 - **Every endpoint validates input with Zod** before reaching service code.
 - **Auth is enforced at middleware, not service** — services trust their inputs.
 
-### `apps/ml` — ML service
+### `backend/ml` — ML service
 
 ```
 app/
 ├── main.py                    FastAPI factory + lifespan + CORS + routers
 ├── config.py                  Pydantic Settings (env-driven)
 ├── logger.py                  Loguru config
-├── schemas.py                 Pydantic models (parity with packages/types)
+├── schemas.py                 Pydantic models (parity with backend/types)
 ├── llm/                       ★ Provider abstraction
 │   ├── base.py                LLMProvider Protocol + Message
 │   ├── factory.py             get_llm_provider() picks the backend
@@ -195,17 +195,16 @@ class LLMProvider(Protocol):
     async def complete(self, request: LLMRequest) -> str: ...
 ```
 
-Three concrete providers:
+One concrete provider:
 
-| Provider          | Status      | When to use                                   |
-| ----------------- | ----------- | --------------------------------------------- |
-| `GroqProvider`    | ✅ Day 1    | Llama-3.3-70B free tier — fast, capable, free |
-| `HFSpaceProvider` | 🚧 Week 3   | Your own fine-tuned Qwen 2.5 1.5B on ZeroGPU  |
-| `OpenAIProvider`  | 🚧 optional | Hard fallback for stuck cases                 |
+| Provider       | Status   | When to use                                   |
+| -------------- | -------- | --------------------------------------------- |
+| `GroqProvider` | ✅ Active | Llama-3.3-70B free tier — fast, capable, free |
 
-Switch backends with one env var: `LLM_PROVIDER=groq` → `LLM_PROVIDER=hf_space`. No code changes.
+`groq` is the only supported provider; `factory.py` raises a clear `ValueError`
+for any other `LLM_PROVIDER` value.
 
-### `packages/types` — Shared contracts
+### `backend/types` — Shared contracts
 
 The single source of truth for cross-service types:
 
@@ -225,12 +224,12 @@ src/
 
 ## Auth flow (Clerk)
 
-1. User clicks "Sign up" → `apps/web/src/routes/auth/sign-up.tsx` mounts `<SignUp>` from `@clerk/clerk-react`.
+1. User clicks "Sign up" → `frontend/src/routes/auth/sign-up.tsx` mounts `<SignUp>` from `@clerk/clerk-react`.
 2. Clerk handles email + verification + OAuth fully — we never touch passwords.
 3. After sign-up, Clerk redirects to `/onboarding`. After sign-in, to `/dashboard`.
 4. `<ProtectedRoute>` checks `useAuth()` — redirects to `/sign-in` if not signed in.
 5. On every API call, the browser fetches a fresh JWT via `getToken()` and sends `Authorization: Bearer <jwt>`.
-6. `apps/api/src/middleware/auth.ts` validates the JWT against Clerk's public keys (cached) and exposes `userId`.
+6. `backend/api/src/middleware/auth.ts` validates the JWT against Clerk's public keys (cached) and exposes `userId`.
 7. On the user's first authenticated request, `getOrCreateUser()` syncs their Clerk profile into Mongo (one-time, idempotent).
 
 ## State management
