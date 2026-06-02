@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "verbatimModuleSyntax": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@kairos/types": ["../types/src/index.ts"]
+    },
+    "types": ["node"]
+  },
+  "include": ["src/**/*", "../types/src/**/*"]
+}

@@ -50,10 +50,11 @@ training/runs/
 *.pem
 *.key
 
-# IDE
+# IDE / agent tooling
 .vscode/
 .idea/
 .cursorignore
+.claude/
 *.swp
 *.swo
 
@@ -78,8 +79,3 @@ coverage/
 
 # Misc
 .eslintcache
-.stylelintcache
-
-# Local-only docs scratch
-.scratch/
-TODO.local.md

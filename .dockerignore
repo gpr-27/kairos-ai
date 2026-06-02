@@ -1,0 +1,38 @@
+# Keep the Docker build context small and reproducible. Anything the image needs
+# is rebuilt or installed inside the Dockerfile.
+
+# Dependencies & build outputs (reinstalled / rebuilt in-image)
+**/node_modules
+**/dist
+**/build
+**/.turbo
+**/*.tsbuildinfo
+
+# Python local artifacts (the image builds a fresh venv)
+**/.venv
+**/venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+
+# Secrets & local env (provided as Render env vars at deploy time)
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# VCS, CI, editor, OS noise — not needed to run in production
+.git
+.gitignore
+.github
+**/.vscode
+**/.idea
+**/.DS_Store
+**/coverage
+
+# The Docker assets themselves
+Dockerfile
+.dockerignore
