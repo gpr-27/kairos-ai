@@ -2,7 +2,7 @@
   "name": "kairos-ai",
   "private": true,
   "version": "0.1.0",
-  "description": "An AI-powered tutor for DSA, competitive programming, and system design.",
+  "description": "An AI-powered, GROQ-accelerated Socratic tutor for DSA, competitive programming, and system design.",
   "license": "MIT",
   "author": {
     "name": "Praneeth Reddy Gandra",
@@ -10,37 +10,33 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=22",
-    "pnpm": ">=10"
+    "node": ">=20"
   },
-  "packageManager": "pnpm@10.33.2",
+  "workspaces": [
+    "frontend",
+    "backend/api",
+    "backend/types"
+  ],
   "scripts": {
-    "dev": "pnpm --parallel --filter \"./apps/*\" run dev",
-    "dev:web": "pnpm --filter web dev",
-    "dev:api": "pnpm --filter api dev",
-    "dev:ml": "pnpm --filter ml dev",
-    "build": "pnpm -r --filter \"./apps/*\" --filter \"./packages/*\" run build",
-    "lint": "pnpm -r run lint",
-    "lint:fix": "pnpm -r run lint:fix",
-    "typecheck": "pnpm -r run typecheck",
-    "format": "prettier --config config/root/.prettierrc.json --ignore-path config/root/.prettierignore --write .",
-    "format:check": "prettier --config config/root/.prettierrc.json --ignore-path config/root/.prettierignore --check .",
-    "prepare": "husky || true"
+    "setup": "bash scripts/setup.sh",
+    "predev": "node scripts/free-dev-ports.mjs",
+    "dev": "concurrently -n web,api -c magenta,cyan \"npm:dev:web\" \"npm:dev:api\"",
+    "dev:web": "npm run dev --workspace frontend",
+    "dev:api": "npm run dev --workspace api",
+    "dev:ml": "bash scripts/dev-ml.sh",
+    "build": "npm run build --workspace backend/types --if-present && npm run build --workspace api && npm run build --workspace frontend",
+    "build:web": "npm run build --workspace frontend",
+    "build:api": "npm run build --workspace api",
+    "typecheck": "npm run typecheck --workspace backend/types && npm run typecheck --workspace api && npm run typecheck --workspace frontend",
+    "lint": "npm run lint --workspace api && npm run lint --workspace frontend",
+    "test": "npm run test --workspace api && npm run test --workspace frontend",
+    "format": "prettier --write \"frontend/src/**/*.{ts,tsx,css}\" \"backend/{api,types}/src/**/*.ts\"",
+    "format:check": "prettier --check \"frontend/src/**/*.{ts,tsx,css}\" \"backend/{api,types}/src/**/*.ts\""
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
-    "husky": "^9.1.7",
-    "lint-staged": "^15.2.11",
+    "concurrently": "^9.1.0",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
     "typescript": "^5.7.2"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx,mjs,cjs}": [
-      "prettier --config config/root/.prettierrc.json --ignore-path config/root/.prettierignore --write"
-    ],
-    "*.{json,md,yml,yaml,css}": [
-      "prettier --config config/root/.prettierrc.json --ignore-path config/root/.prettierignore --write"
-    ]
   }
 }

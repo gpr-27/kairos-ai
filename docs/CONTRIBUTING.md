@@ -7,9 +7,9 @@ Thanks for considering a contribution. This doc tells you the _how_; the _why_ l
 ```bash
 git clone https://github.com/gpr-27/kairos-ai
 cd kairos-ai
-./scripts/setup.sh         # installs node + python deps, copies config/root/.env.example
+./scripts/setup.sh         # installs node + python deps, copies .env.example
 pnpm dev                   # web + api in parallel
-cd apps/ml && uvicorn app.main:app --reload   # ml service
+cd backend/ml && uvicorn app.main:app --reload   # ml service
 ```
 
 Open a PR, get a review, ship.
@@ -26,7 +26,7 @@ Open a PR, get a review, ship.
 
 ### Prerequisites
 
-- **Node 22+** — `nvm install 22 && nvm use 22` (or use `config/root/.nvmrc`)
+- **Node 22+** — `nvm install 22 && nvm use 22` (or use `.nvmrc`)
 - **pnpm 10+** — `corepack enable && corepack prepare pnpm@latest --activate`
 - **Python 3.11+** — `pyenv install 3.11 && pyenv global 3.11`
 - **MongoDB** — Atlas free tier or local Docker
@@ -40,18 +40,19 @@ Open a PR, get a review, ship.
 This will:
 
 1. Install Node deps with pnpm
-2. Create `apps/ml/.venv` and install Python deps
-3. Copy `config/root/.env.example` → `.env.local` if it doesn't exist
+2. Create `backend/ml/.venv` and install Python deps
+3. Copy `.env.example` → `.env.local` if it doesn't exist
 4. Print a checklist of secrets you still need to fill
 
 ### Manual setup
 
 ```bash
 pnpm install                                       # Node deps for all workspaces
-cd apps/ml && python -m venv .venv && \           # Python venv
+cd backend/ml && python -m venv .venv && \           # Python venv
   source .venv/bin/activate && \
   pip install -r requirements.txt && cd ../..
-cp config/root/.env.example .env.local            # fill in your keys
+cp .env.example .env.local
+# Edit .env.local and add your Clerk, MongoDB, and Groq keys.
 pnpm --filter api seed                             # populate Mongo with sample problems
 ```
 
@@ -63,7 +64,7 @@ pnpm --filter web dev     # web only
 pnpm --filter api dev     # api only
 
 # ML service runs separately:
-cd apps/ml && source .venv/bin/activate
+cd backend/ml && source .venv/bin/activate
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -137,7 +138,7 @@ We do **not** care about:
 ## Adding a new problem
 
 ```bash
-# Edit apps/api/src/scripts/seed-problems.ts and add a new entry.
+# Edit backend/api/src/scripts/seed-problems.ts and add a new entry.
 pnpm --filter api seed
 ```
 
@@ -153,10 +154,10 @@ Each problem must have:
 
 ## Adding a new LLM provider
 
-1. Implement `LLMProvider` (see `apps/ml/app/llm/base.py`)
-2. Add it to `apps/ml/app/llm/factory.py::get_llm_provider`
+1. Implement `LLMProvider` (see `backend/ml/app/llm/base.py`)
+2. Add it to `backend/ml/app/llm/factory.py::get_llm_provider`
 3. Document the new provider in this file and the env vars it needs
-4. Add a test in `apps/ml/tests/test_<provider>.py`
+4. Add a test in `backend/ml/tests/test_<provider>.py`
 
 ## Code of Conduct
 

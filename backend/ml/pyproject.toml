@@ -1,0 +1,49 @@
+[project]
+name = "kairos-ml"
+version = "0.1.0"
+description = "Kairos AI — ML service (FastAPI + LangGraph)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.6",
+    "uvicorn[standard]>=0.34.0",
+    "pydantic>=2.10.4",
+    "pydantic-settings>=2.7.1",
+    "python-dotenv>=1.0.1",
+    "httpx>=0.28.1",
+    "loguru>=0.7.3",
+    "groq>=0.15.0",
+    "tenacity>=9.0.0",
+    "sse-starlette>=2.1.3,<3.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.4",
+    "mypy>=1.13.0",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RET"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+disallow_untyped_defs = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
