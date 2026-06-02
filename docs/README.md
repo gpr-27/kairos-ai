@@ -13,13 +13,13 @@ Use this page to navigate documentation quickly.
 
 ## App docs
 
-- `../apps/web/README.md` - frontend app details
-- `../apps/api/README.md` - backend app details
-- `../apps/ml/README.md` - ML service details
+- `../frontend/README.md` - frontend app details
+- `../backend/api/README.md` - backend app details
+- `../backend/ml/README.md` - ML service details
 
 ## Recommended reading order
 
-1. `../config/root/START_HERE.md`
+1. `../START_HERE.md`
 2. `ARCHITECTURE.md`
 3. `DEPLOYMENT.md`
 4. `SECURITY.md`

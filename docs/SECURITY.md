@@ -16,7 +16,7 @@ You'll get an acknowledgment within **48 hours** and, where possible, a fix with
 ### Secrets
 
 - ✅ All secrets live in `.env.local` (gitignored) or platform secret stores (Vercel, Render, HF Spaces).
-- ✅ `config/root/.env.example` only contains placeholders.
+- ✅ `.env.example` only contains placeholders.
 - ✅ No secret has ever been committed. If one is, it's rotated immediately.
 - ✅ Server-only secrets (e.g. `CLERK_SECRET_KEY`, `MONGODB_URI`) are never sent to the browser.
 
@@ -31,7 +31,7 @@ You'll get an acknowledgment within **48 hours** and, where possible, a fix with
 
 - ✅ HTTPS is enforced by every host (Vercel, Render, HF Spaces).
 - ✅ `helmet()` sets standard headers: `X-Content-Type-Options`, `X-Frame-Options`, `Strict-Transport-Security`, etc.
-- ✅ CORS is **allowlist only** — `WEB_ORIGIN` env var, default-deny.
+- ✅ CORS is **allowlist only** — `ALLOWED_ORIGINS` env var, default-deny.
 - ✅ Cookies are `httpOnly`, `secure`, `sameSite=lax`.
 
 ### Input validation

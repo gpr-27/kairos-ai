@@ -1,33 +1,85 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Kairos AI — Render Blueprint (single all-in-one web service).
+#
+# One Docker container runs the Python ML service (internal) and the Node API
+# (public). The Node server serves the built SPA, the REST API, and the
+# WebSocket, and proxies /ml/* to the local ML service. See Dockerfile +
+# deploy/start.sh. Deploy with: Render Dashboard → New → Blueprint → this repo.
+#
+# Values marked `sync: false` are secrets: set them in the Render dashboard, they
+# are never stored in this file or in git. See docs/DEPLOY_RENDER.md.
+# ─────────────────────────────────────────────────────────────────────────────
 services:
   - type: web
-    name: kairos-api
-    runtime: node
-    region: oregon
-    plan: free
-    rootDir: .
-    buildCommand: corepack enable && corepack prepare pnpm@latest --activate && pnpm install --frozen-lockfile && pnpm --filter api build
-    startCommand: pnpm --filter api start
+    name: kairos-ai
+    runtime: docker
+    plan: free # bump to `starter` if the free 512 MB is tight under load
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /api/v1/health
+    autoDeploy: true
     envVars:
+      # ── Frontend build config (baked into the SPA at build time) ───────────
+      # Render exposes these as Docker build args. Only non-secret/public values.
+      - key: VITE_APP_ENV
+        value: production
+      - key: VITE_LLM_PROVIDER
+        value: groq
+      - key: VITE_DEFAULT_MODEL
+        value: llama-3.3-70b-versatile
+      - key: VITE_AVAILABLE_MODELS
+        value: llama-3.1-8b-instant|Llama 3.1 8B,llama-3.3-70b-versatile|Llama 3.3 70B,openai/gpt-oss-120b|GPT-OSS 120B,openai/gpt-oss-20b|GPT-OSS 20B,openai/gpt-oss-safeguard-20b|GPT-OSS Safeguard 20B,qwen/qwen3-32b|Qwen 3 32B,groq/compound|Groq Compound,groq/compound-mini|Groq Compound Mini
+      # Clerk publishable key is public (ships in the client bundle). Set it in
+      # the dashboard so it is available as a build arg.
+      - key: VITE_CLERK_PUBLISHABLE_KEY
+        sync: false
+
+      # ── Node API — runtime ─────────────────────────────────────────────────
       - key: NODE_ENV
         value: production
       - key: API_PORT
-        value: 4000
+        value: "10000" # must match the port Render routes to (default PORT=10000)
       - key: API_BASE_URL
-        sync: false
+        value: https://kairos-ai.onrender.com # update if you rename the service
       - key: WEB_BASE_URL
-        sync: false
-      - key: ML_BASE_URL
-        sync: false
+        value: https://kairos-ai.onrender.com
       - key: ALLOWED_ORIGINS
-        sync: false
-      - key: CLERK_PUBLISHABLE_KEY
-        sync: false
-      - key: CLERK_SECRET_KEY
-        sync: false
-      - key: MONGODB_URI
-        sync: false
+        value: https://kairos-ai.onrender.com
+      - key: ML_BASE_URL
+        value: http://127.0.0.1:8000 # the co-located ML service (same container)
       - key: PISTON_BASE_URL
         value: https://emkc.org/api/v2/piston
       - key: LOG_LEVEL
         value: info
+      - key: LLM_PROVIDER
+        value: groq
+      - key: DEFAULT_MODEL
+        value: llama-3.3-70b-versatile
+      - key: AVAILABLE_MODELS
+        value: llama-3.1-8b-instant|Llama 3.1 8B,llama-3.3-70b-versatile|Llama 3.3 70B,openai/gpt-oss-120b|GPT-OSS 120B,openai/gpt-oss-20b|GPT-OSS 20B,openai/gpt-oss-safeguard-20b|GPT-OSS Safeguard 20B,qwen/qwen3-32b|Qwen 3 32B,groq/compound|Groq Compound,groq/compound-mini|Groq Compound Mini
+      # Secrets — set these in the Render dashboard (never commit them):
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_JWT_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      # Auto-generated 32-byte secret for signing guest session tokens.
+      - key: GUEST_TOKEN_SECRET
+        generateValue: true
+
+      # ── Python ML — runtime (internal only) ────────────────────────────────
+      - key: ML_HOST
+        value: 127.0.0.1
+      - key: ML_PORT
+        value: "8000"
+      - key: LLM_FALLBACK_MODEL
+        value: llama-3.1-8b-instant
+      - key: LLM_TEMPERATURE
+        value: "0.4"
+      - key: LLM_MAX_TOKENS
+        value: "2048"
