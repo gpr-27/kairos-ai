@@ -43,7 +43,7 @@ function NavItem({
       className={({ isActive }) =>
         cn(
           'relative flex items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors',
-          compact ? 'py-1.5' : 'py-2',
+          compact ? 'min-h-[40px] py-2' : 'py-2',
           isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
         )
       }

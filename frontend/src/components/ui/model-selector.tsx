@@ -53,15 +53,15 @@ export function ModelSelector({
       <SelectTrigger
         aria-label="Select AI model"
         className={cn(
-          'h-7 w-auto gap-1.5 rounded-full border-violet-500/20 bg-violet-500/10 px-2.5 py-0',
+          'h-7 w-auto min-w-0 max-w-[15rem] gap-1.5 rounded-full border-violet-500/20 bg-violet-500/10 px-2.5 py-0',
           'text-[11px] font-medium text-violet-300 focus:ring-1 focus:ring-offset-0',
           className,
         )}
       >
         <Sparkles className="h-3 w-3 shrink-0 opacity-80" />
-        <span className="truncate">{selected?.label ?? 'Select model'}</span>
+        <span className="min-w-0 truncate">{selected?.label ?? 'Select model'}</span>
         {selectedBadge && (
-          <span className="rounded bg-violet-500/20 px-1 text-[9px] font-semibold text-violet-300">
+          <span className="shrink-0 rounded bg-violet-500/20 px-1 text-[9px] font-semibold text-violet-300">
             {selectedBadge}
           </span>
         )}

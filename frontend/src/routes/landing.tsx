@@ -125,7 +125,7 @@ export default function LandingPage(): JSX.Element {
               <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
                 <a href="#features">Features</a>
               </Button>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" className="hidden min-[380px]:inline-flex">
                 <Link to="/sign-in">Sign in</Link>
               </Button>
               <Button asChild variant="gradient" size="sm">
