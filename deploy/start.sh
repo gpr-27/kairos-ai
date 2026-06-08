@@ -20,6 +20,20 @@ echo "▶ starting ML service (uvicorn) on ${ML_HOST}:${ML_PORT}"
 uvicorn app.main:app --host "${ML_HOST}" --port "${ML_PORT}" --app-dir backend/ml &
 ML_PID=$!
 
+# Wait for the ML service to answer /health before starting the public API, so the
+# API never proxies /ml/* to a not-yet-ready uvicorn (avoids a transient 502 window
+# right after deploy). Bounded so a genuinely-stuck ML still lets `wait -n` fail loud.
+echo "▶ waiting for ML /health on ${ML_HOST}:${ML_PORT}…"
+for _ in $(seq 1 30); do
+  if curl -sf "http://${ML_HOST}:${ML_PORT}/health" >/dev/null 2>&1; then
+    echo "✓ ML service is ready"
+    break
+  fi
+  # Stop waiting early if uvicorn already died — let the supervisor bring the container down.
+  kill -0 "${ML_PID}" 2>/dev/null || { echo "✗ ML process exited during startup"; break; }
+  sleep 1
+done
+
 echo "▶ starting API + web (node/tsx) on :${API_PORT:-10000}"
 node_modules/.bin/tsx backend/api/src/server.ts &
 API_PID=$!
