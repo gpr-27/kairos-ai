@@ -93,13 +93,15 @@ export default function OnboardingPage(): JSX.Element {
         <span className="text-muted-foreground text-sm">Step {step} of 3</span>
       </header>
 
-      <div className="bg-muted mx-auto h-1 w-full max-w-4xl overflow-hidden rounded-full">
-        <motion.div
-          className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
-          initial={{ width: '0%' }}
-          animate={{ width: `${stepProgress}%` }}
-          transition={{ duration: 0.4 }}
-        />
+      <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
+        <div className="bg-muted h-1 w-full overflow-hidden rounded-full">
+          <motion.div
+            className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+            initial={{ width: '0%' }}
+            animate={{ width: `${stepProgress}%` }}
+            transition={{ duration: 0.4 }}
+          />
+        </div>
       </div>
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-4 py-12 sm:px-6">

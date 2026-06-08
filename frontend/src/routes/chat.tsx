@@ -207,8 +207,8 @@ function SessionRow({
         <button
           onClick={() => setMenuOpen((v) => !v)}
           className={cn(
-            'text-muted-foreground hover:text-foreground rounded p-1 transition-opacity',
-            menuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+            'text-muted-foreground hover:text-foreground rounded p-2 transition-opacity md:p-1',
+            menuOpen ? 'opacity-100' : 'opacity-100 md:opacity-0 md:group-hover:opacity-100',
           )}
           title="Actions"
           aria-label="Session actions"
@@ -597,7 +597,7 @@ export default function ChatPage(): JSX.Element {
             <p className="text-sm font-semibold">AI Coach</p>
             <p className="text-muted-foreground text-[10px]">Ask anything</p>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto min-w-0">
             <ModelSelector value={model} onChange={setModel} disabled={streaming} />
           </div>
         </div>

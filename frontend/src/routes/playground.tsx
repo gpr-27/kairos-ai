@@ -364,13 +364,13 @@ export default function PlaygroundPage(): JSX.Element {
   return (
     <div className="flex h-[calc(100dvh-4rem)] flex-col">
       {/* ── Toolbar ── */}
-      <div className="border-border/60 bg-card/20 flex shrink-0 items-center gap-2 border-b px-3 py-1.5">
+      <div className="border-border/60 bg-card/20 flex shrink-0 flex-wrap items-center gap-2 border-b px-3 py-1.5">
         <Terminal className="text-primary h-4 w-4 shrink-0" />
         <span className="text-sm font-semibold">Playground</span>
         <span className="text-border/60 select-none px-1">|</span>
 
         <Select value={selectedLang.key} onValueChange={handleLangChange}>
-          <SelectTrigger className="border-border/40 bg-background/40 w-40">
+          <SelectTrigger className="border-border/40 bg-background/40 w-28 min-w-0 shrink-0 sm:w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

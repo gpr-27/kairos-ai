@@ -83,11 +83,11 @@ function CommentCard({
             <span className="text-muted-foreground text-[10px]">{timeAgo}</span>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
           {isOwn && (
             <button
               onClick={() => onDelete(comment.id)}
-              className="text-muted-foreground hover:text-destructive rounded p-1 transition-colors"
+              className="text-muted-foreground hover:text-destructive rounded p-2 transition-colors"
               title="Delete comment"
             >
               <Trash2 className="h-3.5 w-3.5" />

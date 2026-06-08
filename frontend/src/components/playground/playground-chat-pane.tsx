@@ -378,7 +378,7 @@ export function PlaygroundChatPane({ language, currentCode }: PlaygroundChatPane
               size="sm"
               disabled={streaming}
               onClick={() => void sendMessage(action.prompt, action.intent)}
-              className="h-7 text-xs"
+              className="h-9 text-xs sm:h-7"
             >
               <action.icon className="h-3 w-3" />
               {action.label}
