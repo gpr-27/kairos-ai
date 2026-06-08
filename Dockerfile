@@ -39,6 +39,14 @@ RUN npm ci
 COPY tsconfig.base.json ./
 COPY backend/types ./backend/types
 COPY frontend ./frontend
+# Fail the build LOUD if the public Clerk key wasn't provided. Vite only inlines
+# import.meta.env at build time — it never runs the config validator — so without
+# this guard a missing key produces a green image whose SPA white-screens for every
+# visitor ("Invalid environment variables"). Set it as a Render env var (sync:false).
+RUN test -n "$VITE_CLERK_PUBLISHABLE_KEY" || ( \
+      echo "❌ VITE_CLERK_PUBLISHABLE_KEY build arg is empty. Set it as a Render env" \
+           "var (sync:false) before deploying — the SPA cannot init Clerk without it." \
+      && exit 1 )
 RUN npm run build --workspace frontend
 
 # ── Stage 2: runtime (Node + Python in one image) ────────────────────────────

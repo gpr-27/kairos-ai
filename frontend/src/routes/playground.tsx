@@ -101,6 +101,11 @@ interface PlaygroundLanguage {
   defaultStdin: string; // pre-filled so Run works immediately
 }
 
+// Only languages whose runtimes ship in the production image (node:20-slim +
+// python3) are offered for interactive execution. TypeScript runs via the bundled
+// `tsx`. Compiled / heavier languages (C, C++, Java, Go, Rust, …) are intentionally
+// omitted here so the single-container free-tier deploy never advertises a runtime it
+// can't run; add their toolchains to the Dockerfile (and entries below) to re-enable.
 const PLAYGROUND_LANGS: PlaygroundLanguage[] = [
   {
     key: 'python',
@@ -113,59 +118,6 @@ def main():
     print(f"Hello, {name}!")
 
 main()
-`,
-  },
-  {
-    key: 'cpp',
-    label: 'C++',
-    monacoLang: 'cpp',
-    defaultStdin: 'World',
-    starter: `// C++ Playground
-#include <iostream>
-#include <string>
-
-int main() {
-    std::string name;
-    std::getline(std::cin, name);
-    std::cout << "Hello, " << name << "!" << std::endl;
-
-    return 0;
-}
-`,
-  },
-  {
-    key: 'c',
-    label: 'C',
-    monacoLang: 'c',
-    defaultStdin: 'World',
-    starter: `// C Playground
-#include <stdio.h>
-#include <string.h>
-
-int main() {
-    char name[256];
-    fgets(name, sizeof(name), stdin);
-    name[strcspn(name, "\n")] = 0;
-    printf("Hello, %s!\n", name);
-    return 0;
-}
-`,
-  },
-  {
-    key: 'java',
-    label: 'Java',
-    monacoLang: 'java',
-    defaultStdin: 'World',
-    starter: `// Java Playground
-import java.util.Scanner;
-
-public class Main {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        String name = sc.nextLine();
-        System.out.println("Hello, " + name + "!");
-    }
-}
 `,
   },
   {
@@ -196,90 +148,6 @@ rl.on('line', (name: string) => {
     console.log(\`Hello, \${name}!\`);
     rl.close();
 });
-`,
-  },
-  {
-    key: 'go',
-    label: 'Go',
-    monacoLang: 'go',
-    defaultStdin: 'World',
-    starter: `// Go Playground
-package main
-
-import (
-    "bufio"
-    "fmt"
-    "os"
-    "strings"
-)
-
-func main() {
-    reader := bufio.NewReader(os.Stdin)
-    name, _ := reader.ReadString('\n')
-    name = strings.TrimSpace(name)
-    fmt.Printf("Hello, %s!\n", name)
-}
-`,
-  },
-  {
-    key: 'rust',
-    label: 'Rust',
-    monacoLang: 'rust',
-    defaultStdin: 'World',
-    starter: `// Rust Playground
-use std::io::{self, BufRead};
-
-fn main() {
-    let stdin = io::stdin();
-    let name = stdin.lock().lines().next()
-        .and_then(|l| l.ok())
-        .unwrap_or_default();
-    println!("Hello, {}!", name);
-}
-`,
-  },
-  {
-    key: 'kotlin',
-    label: 'Kotlin',
-    monacoLang: 'kotlin',
-    defaultStdin: 'World',
-    starter: `// Kotlin Playground
-fun main() {
-    val name = readLine() ?: "World"
-    println("Hello, $name!")
-}
-`,
-  },
-  {
-    key: 'ruby',
-    label: 'Ruby',
-    monacoLang: 'ruby',
-    defaultStdin: 'World',
-    starter: `# Ruby Playground
-name = gets.chomp
-puts "Hello, #{name}!"
-`,
-  },
-  {
-    key: 'php',
-    label: 'PHP',
-    monacoLang: 'php',
-    defaultStdin: 'World',
-    starter: `<?php
-// PHP Playground
-$name = trim(fgets(STDIN));
-echo "Hello, {$name}!\n";
-`,
-  },
-  {
-    key: 'swift',
-    label: 'Swift',
-    monacoLang: 'swift',
-    defaultStdin: 'World',
-    starter: `// Swift Playground
-if let name = readLine() {
-    print("Hello, \\(name)!")
-}
 `,
   },
 ];

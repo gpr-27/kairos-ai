@@ -17,9 +17,11 @@
  */
 
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import type { WebSocket, WebSocketServer } from 'ws';
 import { logger } from '../config/logger.js';
@@ -32,46 +34,32 @@ interface ExecPlan {
   run: { cmd: string; args: string[] };
 }
 
+/**
+ * Absolute path to the bundled `tsx` binary, used to run the TypeScript playground
+ * with no network access. tsx is a workspace devDependency hoisted to the root
+ * node_modules in both local dev and the Docker image; we resolve it by absolute
+ * path because the child process runs from a throwaway temp dir that has no
+ * node_modules of its own (so `npx tsx` would re-download). Falls back to PATH.
+ */
+function resolveTsxBin(): string {
+  const moduleDir = path.dirname(fileURLToPath(import.meta.url)); // …/backend/api/src/ws
+  const candidates = [
+    path.resolve(moduleDir, '../../../../node_modules/.bin/tsx'), // repo/image root
+    path.resolve(process.cwd(), 'node_modules/.bin/tsx'),
+  ];
+  return candidates.find((candidate) => existsSync(candidate)) ?? 'tsx';
+}
+const TSX_BIN = resolveTsxBin();
+
+// Only languages whose runtimes exist in the production image (python3 + node, plus
+// the bundled tsx for TypeScript) are runnable interactively. The UI offers exactly
+// this set (frontend/src/routes/playground.tsx); anything else returns a clear
+// "not supported" message via runSession's guard. Add a toolchain to the Dockerfile
+// and an entry here to re-enable a compiled language.
 const EXEC_PLANS: Record<string, ExecPlan> = {
   python: { filename: 'main.py', run: { cmd: 'python3', args: ['main.py'] } },
   javascript: { filename: 'main.js', run: { cmd: 'node', args: ['main.js'] } },
-  typescript: {
-    filename: 'main.ts',
-    run: { cmd: 'npx', args: ['--yes', 'ts-node', '--skipProject', 'main.ts'] },
-  },
-  c: {
-    filename: 'main.c',
-    compile: { cmd: 'gcc', args: ['main.c', '-o', 'main', '-lm'] },
-    run: { cmd: './main', args: [] },
-  },
-  cpp: {
-    filename: 'main.cpp',
-    compile: { cmd: 'g++', args: ['main.cpp', '-O2', '-std=c++17', '-o', 'main'] },
-    run: { cmd: './main', args: [] },
-  },
-  java: {
-    filename: 'Main.java',
-    compile: { cmd: 'javac', args: ['Main.java'] },
-    run: { cmd: 'java', args: ['Main'] },
-  },
-  go: {
-    filename: 'main.go',
-    run: { cmd: 'go', args: ['run', 'main.go'] },
-  },
-  rust: {
-    filename: 'main.rs',
-    compile: { cmd: 'rustc', args: ['main.rs', '-o', 'main'] },
-    run: { cmd: './main', args: [] },
-  },
-  ruby: { filename: 'main.rb', run: { cmd: 'ruby', args: ['main.rb'] } },
-  php: { filename: 'main.php', run: { cmd: 'php', args: ['main.php'] } },
-  kotlin: {
-    filename: 'main.kt',
-    compile: { cmd: 'kotlinc', args: ['main.kt', '-include-runtime', '-d', 'main.jar'] },
-    run: { cmd: 'java', args: ['-jar', 'main.jar'] },
-  },
-  swift: { filename: 'main.swift', run: { cmd: 'swift', args: ['main.swift'] } },
-  bash: { filename: 'main.sh', run: { cmd: 'bash', args: ['main.sh'] } },
+  typescript: { filename: 'main.ts', run: { cmd: TSX_BIN, args: ['main.ts'] } },
 };
 
 const TIMEOUT_MS = 30_000; // 30 s max per session
@@ -82,6 +70,22 @@ function send(ws: WebSocket, msg: Record<string, unknown>): void {
   if (ws.readyState === ws.OPEN) {
     ws.send(JSON.stringify(msg));
   }
+}
+
+/**
+ * Map a spawn() failure to a clear, user-facing message. A missing runtime binary
+ * surfaces as ENOENT ("spawn g++ ENOENT"); translate that into something actionable
+ * instead of leaking the raw command name. Only fires when the runtime truly isn't
+ * present, so the message is always accurate in context.
+ */
+function execErrorMessage(err: NodeJS.ErrnoException, language: string): string {
+  if (err.code === 'ENOENT') {
+    return (
+      `The runtime for "${language}" isn't installed on this server, so it can't run here. ` +
+      `Try Python or JavaScript, or run this language in your local environment.`
+    );
+  }
+  return err.message;
 }
 
 // ── Session handler ───────────────────────────────────────────────────────────
@@ -129,7 +133,7 @@ async function runSession(ws: WebSocket, language: string, code: string): Promis
           out += d.toString();
         });
         proc.on('close', (code) => resolve({ ok: code === 0, output: out }));
-        proc.on('error', (e) => resolve({ ok: false, output: e.message }));
+        proc.on('error', (e) => resolve({ ok: false, output: execErrorMessage(e, language) }));
       });
 
       if (!compileResult.ok) {
@@ -156,7 +160,7 @@ async function runSession(ws: WebSocket, language: string, code: string): Promis
     });
 
     child.on('error', (err) => {
-      if (!killed) send(ws, { type: 'error', message: err.message });
+      if (!killed) send(ws, { type: 'error', message: execErrorMessage(err, language) });
     });
 
     child.on('close', async (code) => {
