@@ -40,11 +40,11 @@ services:
       - key: API_PORT
         value: "10000" # must match the port Render routes to (default PORT=10000)
       - key: API_BASE_URL
-        value: https://kairos-ai.onrender.com # update if you rename the service
+        value: https://kairos-ai-zoxs.onrender.com # update if you rename the service
       - key: WEB_BASE_URL
-        value: https://kairos-ai.onrender.com
+        value: https://kairos-ai-zoxs.onrender.com
       - key: ALLOWED_ORIGINS
-        value: https://kairos-ai.onrender.com
+        value: https://kairos-ai-zoxs.onrender.com
       - key: ML_BASE_URL
         value: http://127.0.0.1:8000 # the co-located ML service (same container)
       - key: PISTON_BASE_URL
