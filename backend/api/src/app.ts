@@ -37,7 +37,13 @@ export function createApp(): express.Application {
     );
   }
 
-  app.use(helmet({ crossOriginResourcePolicy: false }));
+  // This single server also serves the SPA, which loads Clerk's JS (…clerk.accounts.dev),
+  // the Monaco editor from the jsDelivr CDN, and Google Fonts. Helmet's DEFAULT
+  // Content-Security-Policy (`script-src 'self'`) blocks all of those, leaving the app
+  // hung on its loading screen. CSP is therefore disabled here; every other helmet
+  // protection (HSTS, X-Content-Type-Options, frameguard, etc.) stays on. To harden
+  // later, replace `false` with an explicit allow-list CSP for those origins.
+  app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false }));
   app.use(
     cors({
       origin: (origin, cb) => {
